@@ -8,7 +8,6 @@
 import Foundation
 
 struct ChatMessage: Identifiable {
-    
     enum sender {
         case user
         case ai

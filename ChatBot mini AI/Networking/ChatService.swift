@@ -18,15 +18,19 @@ class ChatService {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.addValue("Bearer \(SecretsManager.openRouterApiKey)", forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let payload: [String: Any] = [
-            "model": "openchat/openchat-3.5",
+            "model": "qwen/qwen3-235b-a22b-thinking-2507",
             "messages": [
                 ["role": "user", "content": message]
-            ]
+            ],
+            "max_tokens": 1000
         ]
         
+        print("Sending request with max_tokens: \(payload["max_tokens"] ?? "unknown")")
+
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
         } catch {
@@ -34,6 +38,8 @@ class ChatService {
             completion(nil)
             return
         }
+        
+        print("🔐 Authorization header:", request.value(forHTTPHeaderField: "Authorization") ?? "nil")
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -49,8 +55,10 @@ class ChatService {
             }
             
             do {
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let choices = json["choices"] as? [[String: Any]],
+                let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                print("🔍 Raw response JSON:", json ?? [:])
+                
+                if let choices = json?["choices"] as? [[String: Any]],
                    let messageDict = choices.first?["message"] as? [String: Any],
                    let content = messageDict["content"] as? String {
                     completion(content)
@@ -62,6 +70,7 @@ class ChatService {
                 print("❌ Failed to decode JSON: \(error)")
                 completion(nil)
             }
+
         }.resume()
     }
 }

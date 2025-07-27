@@ -1,0 +1,16 @@
+# Ignore secrets
+Secrets.plist
+
+# macOS
+.DS_Store
+
+# Xcode
+build/
+*.xcworkspace
+DerivedData/
+*.xcuserstate
+*.xcuserdata
+
+# SwiftPM
+/.build
+/Packages

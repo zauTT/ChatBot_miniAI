@@ -10,6 +10,8 @@ import UIKit
 
 class ChatViewController: UIViewController {
     
+    private let viewModel = ChatViewModel()
+    
     private let tableView = UITableView()
     private let inputContainerView = UIView()
     private let inputTextField = UITextField()
@@ -23,6 +25,11 @@ class ChatViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "miniAI - Chatbot"
+        
+        viewModel.onUpdate = { [weak self] in
+            self?.tableView.reloadData()
+            self?.scrollToBottom()
+        }
         
         setupTableView()
         setupInputBar()
@@ -140,10 +147,7 @@ class ChatViewController: UIViewController {
     @objc private func sendButtonTapped() {
         guard let text = inputTextField.text, !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         inputTextField.text = ""
-        let newMessage = ChatMessage(text: text, sender: .user)
-        messages.append(newMessage)
-        tableView.reloadData()
-        scrollToBottom()
+        viewModel.send(text)
     }
     
     @objc private func scrollToBottom() {
@@ -157,13 +161,16 @@ class ChatViewController: UIViewController {
 
 extension ChatViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return messages.count
+        return viewModel.messageCount
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let message = messages[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: ChatMessageCell.identifier, for: indexPath) as! ChatMessageCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ChatMessageCell.identifier, for: indexPath) as? ChatMessageCell else {
+            return UITableViewCell()
+        }
+        let message = viewModel.message(at: indexPath.row)
         cell.configure(with: message)
         return cell
     }
+
 }
