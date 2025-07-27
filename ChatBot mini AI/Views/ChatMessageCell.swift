@@ -1,3 +1,11 @@
+//
+//  ChatMessageCell.swift
+//  ChatBot mini AI
+//
+//  Created by Giorgi Zautashvili on 27.07.25.
+//
+
+
 import UIKit
 
 class ChatMessageCell: UITableViewCell {

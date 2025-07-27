@@ -1,3 +1,10 @@
+//
+//  ChatViewController.swift
+//  ChatBot mini AI
+//
+//  Created by Giorgi Zautashvili on 27.07.25.
+//
+
 import Foundation
 import UIKit
 
@@ -81,7 +88,6 @@ class ChatViewController: UIViewController {
             
             inputContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             inputContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            inputContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             inputContainerBottomConstraint,
             
             inputTextField.topAnchor.constraint(equalTo: inputContainerView.topAnchor, constant: 6),
