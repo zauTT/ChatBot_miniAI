@@ -36,4 +36,9 @@ class ChatViewModel {
     var messageCount: Int {
         return messages.count
     }
+    
+    func clearMessages() {
+        messages.removeAll()
+        onUpdate?()
+    }
 }
