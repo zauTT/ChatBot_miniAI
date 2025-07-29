@@ -54,13 +54,14 @@ class ContainerViewController: UIViewController {
     @objc private func toggleMenu() {
         isMenuOpen.toggle()
 
-        let menuTargetX: CGFloat = isMenuOpen ? 0 : -menuWidth
-        let dimAlpha: CGFloat = isMenuOpen ? 1 : 0
-
-        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
-            self.menuVC.view.frame.origin.x = menuTargetX
-            self.dimmingView.alpha = dimAlpha
-        }
+        UIView.animate(withDuration: 0.3, animations: {
+            self.menuVC.view.frame.origin.x = self.isMenuOpen ? 0 : -self.menuWidth
+            self.chatVC.view.frame.origin.x = self.isMenuOpen ? self.menuWidth : 0
+            self.dimmingView.alpha = self.isMenuOpen ? 1 : 0
+        })
+        
+        self.chatVC.updateBackgroundColor(for: isMenuOpen, style: self.traitCollection.userInterfaceStyle)
+        
     }
     
     private func startNewChat() {

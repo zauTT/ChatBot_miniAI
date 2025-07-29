@@ -229,6 +229,25 @@ class ChatViewController: UIViewController {
         inputTextField.text = ""
         scrollToBottom()
     }
+    
+    func updateBackgroundColor(for isMenuOpen: Bool, style: UIUserInterfaceStyle) {
+        let mainBgColor: UIColor
+        if isMenuOpen {
+            mainBgColor = style == .dark ? .darkGray : .lightGray
+        } else {
+            mainBgColor = .systemBackground
+        }
+
+        self.view.backgroundColor = mainBgColor
+        self.tableView.backgroundColor = mainBgColor
+        inputTextField.backgroundColor = mainBgColor
+
+        if isMenuOpen {
+            inputContainerView.backgroundColor = mainBgColor
+        } else {
+            inputContainerView.backgroundColor = .secondarySystemBackground
+        }
+    }
 }
 
 // MARK: - UITableViewDataSource
