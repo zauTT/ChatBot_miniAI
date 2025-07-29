@@ -9,9 +9,6 @@ import Foundation
 import UIKit
 
 class ChatViewController: UIViewController {
-
-    private var menuViewController: MenuViewController?
-    private var isMenuVisible = false
     
     private let viewModel = ChatViewModel()
     
@@ -73,7 +70,6 @@ class ChatViewController: UIViewController {
             headerView.heightAnchor.constraint(equalToConstant: 44)
         ])
 
-        // Menu button setup
         menuButton.setImage(UIImage(systemName: "line.horizontal.3"), for: .normal)
         menuButton.tintColor = .label
         menuButton.translatesAutoresizingMaskIntoConstraints = false
@@ -87,7 +83,6 @@ class ChatViewController: UIViewController {
             menuButton.heightAnchor.constraint(equalToConstant: 30)
         ])
 
-        // Title label setup
         titleLabel.text = "miniAI - chatBot"
         titleLabel.textColor = .label
         titleLabel.font = .boldSystemFont(ofSize: 18)
@@ -121,6 +116,7 @@ class ChatViewController: UIViewController {
         tableView.keyboardDismissMode = .interactive
         tableView.estimatedRowHeight = 100
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.scrollsToTop = false
     }
 
     private func setupInputBar() {
@@ -144,7 +140,8 @@ class ChatViewController: UIViewController {
 
     private func setupConstraints() {
         inputContainerBottomConstraint = inputContainerView.bottomAnchor.constraint(equalTo: mainContainerView.safeAreaLayoutGuide.bottomAnchor)
-
+        inputContainerBottomConstraint.isActive = true
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: headerView.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: mainContainerView.leadingAnchor),
@@ -166,43 +163,6 @@ class ChatViewController: UIViewController {
             sendButton.widthAnchor.constraint(equalToConstant: 32),
         ])
     }
-
-    // MARK: - Side Menu
-
-    private func showSideMenu() {
-        guard menuViewController == nil else { return }
-
-        let width = view.bounds.width * 0.75
-
-        let menuVC = MenuViewController()
-        addChild(menuVC)
-        menuVC.view.frame = CGRect(x: 0, y: 0, width: width, height: view.bounds.height)
-        view.insertSubview(menuVC.view, belowSubview: mainContainerView)
-        menuVC.didMove(toParent: self)
-        self.menuViewController = menuVC
-
-        menuVC.newChatButton.addTarget(self, action: #selector(newChatButtonTapped), for: .touchUpInside)
-
-        UIView.animate(withDuration: 0.3) {
-            self.mainContainerView.transform = CGAffineTransform(translationX: width, y: 0)
-        }
-
-        isMenuVisible = true
-    }
-
-    private func hideSideMenu() {
-        UIView.animate(withDuration: 0.3, animations: {
-            self.mainContainerView.transform = .identity
-        }) { _ in
-            self.menuViewController?.willMove(toParent: nil)
-            self.menuViewController?.view.removeFromSuperview()
-            self.menuViewController?.removeFromParent()
-            self.menuViewController = nil
-        }
-
-        isMenuVisible = false
-    }
-
 
     // MARK: - Keyboard Handling
 
@@ -239,12 +199,11 @@ class ChatViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func menuButtonTapped() {
+        print("Menu button tapped")
         onMenuTap?()
-        isMenuVisible ? hideSideMenu() : showSideMenu()
     }
 
     @objc private func newChatButtonTapped() {
-        hideSideMenu()
         viewModel.clearMessages()
         UIView.transition(with: tableView, duration: 0.3, options: .transitionCrossDissolve) {
             self.tableView.reloadData()
@@ -262,6 +221,13 @@ class ChatViewController: UIViewController {
         guard count > 0 else { return }
         let indexPath = IndexPath(row: count - 1, section: 0)
         tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+    }
+    
+    func startNewConversation() {
+        viewModel.clearMessages()
+        tableView.reloadData()
+        inputTextField.text = ""
+        scrollToBottom()
     }
 }
 
