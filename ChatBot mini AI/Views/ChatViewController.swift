@@ -43,7 +43,7 @@ class ChatViewController: UIViewController {
         setupConstraints()
         setupKeyboardObservers()
     }
-
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow),
@@ -51,50 +51,50 @@ class ChatViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide),
                                                name: UIResponder.keyboardWillHideNotification, object: nil)
     }
-
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
     }
-
+    
     // MARK: - Setup Views
     
     private func setupHeader() {
         headerView.translatesAutoresizingMaskIntoConstraints = false
         mainContainerView.addSubview(headerView)
-
+        
         NSLayoutConstraint.activate([
             headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             headerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             headerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             headerView.heightAnchor.constraint(equalToConstant: 44)
         ])
-
+        
         menuButton.setImage(UIImage(systemName: "line.horizontal.3"), for: .normal)
         menuButton.tintColor = .label
         menuButton.translatesAutoresizingMaskIntoConstraints = false
         menuButton.addTarget(self, action: #selector(menuButtonTapped), for: .touchUpInside)
         headerView.addSubview(menuButton)
-
+        
         NSLayoutConstraint.activate([
             menuButton.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
             menuButton.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
             menuButton.widthAnchor.constraint(equalToConstant: 30),
             menuButton.heightAnchor.constraint(equalToConstant: 30)
         ])
-
+        
         titleLabel.text = "miniAI - chatBot"
         titleLabel.textColor = .label
         titleLabel.font = .boldSystemFont(ofSize: 18)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(titleLabel)
-
+        
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: headerView.centerYAnchor)
         ])
     }
-
+    
     private func setupMainContainer() {
         mainContainerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mainContainerView)
@@ -105,7 +105,7 @@ class ChatViewController: UIViewController {
             mainContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
-
+    
     private func setupTableView() {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         mainContainerView.addSubview(tableView)
@@ -118,26 +118,26 @@ class ChatViewController: UIViewController {
         tableView.rowHeight = UITableView.automaticDimension
         tableView.scrollsToTop = false
     }
-
+    
     private func setupInputBar() {
         inputContainerView.backgroundColor = .secondarySystemBackground
         inputContainerView.translatesAutoresizingMaskIntoConstraints = false
         mainContainerView.addSubview(inputContainerView)
-
+        
         inputTextField.placeholder = "Ask away..."
         inputTextField.borderStyle = .roundedRect
         inputTextField.layer.cornerRadius = 8
         inputTextField.layer.masksToBounds = true
         inputTextField.translatesAutoresizingMaskIntoConstraints = false
-
+        
         sendButton.setTitle("↑", for: .normal)
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         sendButton.addTarget(self, action: #selector(sendButtonTapped), for: .touchUpInside)
-
+        
         inputContainerView.addSubview(inputTextField)
         inputContainerView.addSubview(sendButton)
     }
-
+    
     private func setupConstraints() {
         inputContainerBottomConstraint = inputContainerView.bottomAnchor.constraint(equalTo: mainContainerView.safeAreaLayoutGuide.bottomAnchor)
         inputContainerBottomConstraint.isActive = true
@@ -147,75 +147,75 @@ class ChatViewController: UIViewController {
             tableView.leadingAnchor.constraint(equalTo: mainContainerView.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: mainContainerView.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: inputContainerView.topAnchor),
-
+            
             inputContainerView.leadingAnchor.constraint(equalTo: mainContainerView.leadingAnchor),
             inputContainerView.trailingAnchor.constraint(equalTo: mainContainerView.trailingAnchor),
             inputContainerBottomConstraint,
-
+            
             inputTextField.topAnchor.constraint(equalTo: inputContainerView.topAnchor, constant: 6),
             inputTextField.bottomAnchor.constraint(equalTo: inputContainerView.bottomAnchor, constant: -6),
             inputTextField.leadingAnchor.constraint(equalTo: inputContainerView.leadingAnchor, constant: 12),
             inputTextField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -8),
             inputTextField.heightAnchor.constraint(greaterThanOrEqualToConstant: 36),
-
+            
             sendButton.trailingAnchor.constraint(equalTo: inputContainerView.trailingAnchor, constant: -12),
             sendButton.centerYAnchor.constraint(equalTo: inputContainerView.centerYAnchor),
             sendButton.widthAnchor.constraint(equalToConstant: 32),
         ])
     }
-
+    
     // MARK: - Keyboard Handling
-
+    
     private func setupKeyboardObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
-
+    
     @objc private func keyboardWillShow(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
               let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
-
+        
         let keyboardHeight = keyboardFrame.height - view.safeAreaInsets.bottom
         inputContainerBottomConstraint.constant = -keyboardHeight
-
+        
         UIView.animate(withDuration: animationDuration) {
             self.view.layoutIfNeeded()
             self.scrollToBottom()
         }
     }
-
+    
     @objc private func keyboardWillHide(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let animationDuration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
-
+        
         inputContainerBottomConstraint.constant = 0
-
+        
         UIView.animate(withDuration: animationDuration) {
             self.view.layoutIfNeeded()
         }
     }
-
+    
     // MARK: - Actions
-
+    
     @objc private func menuButtonTapped() {
         print("Menu button tapped")
         onMenuTap?()
     }
-
+    
     @objc private func newChatButtonTapped() {
         viewModel.clearMessages()
         UIView.transition(with: tableView, duration: 0.3, options: .transitionCrossDissolve) {
             self.tableView.reloadData()
         }
     }
-
+    
     @objc private func sendButtonTapped() {
         guard let text = inputTextField.text, !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         inputTextField.text = ""
         viewModel.send(text)
     }
-
+    
     @objc private func scrollToBottom() {
         let count = viewModel.messageCount
         guard count > 0 else { return }
@@ -230,6 +230,11 @@ class ChatViewController: UIViewController {
         scrollToBottom()
     }
     
+    func loadConversation(_ conversation: Conversation) {
+        self.viewModel.loadConversation(conversation)
+        self.scrollToBottom()
+    }
+    
     func updateBackgroundColor(for isMenuOpen: Bool, style: UIUserInterfaceStyle) {
         let mainBgColor: UIColor
         if isMenuOpen {
@@ -237,11 +242,11 @@ class ChatViewController: UIViewController {
         } else {
             mainBgColor = .systemBackground
         }
-
+        
         self.view.backgroundColor = mainBgColor
         self.tableView.backgroundColor = mainBgColor
         inputTextField.backgroundColor = mainBgColor
-
+        
         if isMenuOpen {
             inputContainerView.backgroundColor = mainBgColor
         } else {
@@ -256,7 +261,7 @@ extension ChatViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.messageCount
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: ChatMessageCell.identifier, for: indexPath) as? ChatMessageCell else {
             return UITableViewCell()

@@ -10,6 +10,6 @@ import Foundation
 struct Conversation: Codable {
     let id: UUID
     let date: Date
-    let messages: [ChatMessage]
+    var messages: [ChatMessage]
     let title: String
 }

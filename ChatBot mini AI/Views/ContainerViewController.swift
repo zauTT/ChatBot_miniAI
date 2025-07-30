@@ -51,6 +51,12 @@ class ContainerViewController: UIViewController {
         menuVC.onNewChatTap = { [weak self] in
             self?.startNewChat()
         }
+        
+        menuVC.onConversationSelected = { [weak self] conversation in
+            self?.chatVC.loadConversation(conversation)
+            self?.toggleMenu()
+            self?.menuVC.loadConversations()
+        }
     }
     
     @objc private func toggleMenu() {
@@ -75,6 +81,7 @@ class ContainerViewController: UIViewController {
     
     private func startNewChat() {
         chatVC.startNewConversation()
+        menuVC.loadConversations()
         toggleMenu()
     }
 }

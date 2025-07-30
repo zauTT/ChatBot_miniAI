@@ -11,26 +11,60 @@ class ChatViewModel {
     private let storage: ConversationStorage
     private let chatService = ChatService()
     private(set) var messages: [ChatMessage] = []
+    
+    private var currentConversation: Conversation?
 
     var onUpdate: (() -> Void)?
     
     init(storage: ConversationStorage) {
         self.storage = storage
     }
-
+    
     func send(_ text: String) {
         let userMessage = ChatMessage(text: text, sender: .user)
         messages.append(userMessage)
         onUpdate?()
-
+        
         chatService.sendMessage(text) { [weak self] reply in
             guard let self = self, let reply = reply else { return }
-
+            
             let aiMessage = ChatMessage(text: reply, sender: .ai)
             DispatchQueue.main.async {
                 self.messages.append(aiMessage)
                 self.onUpdate?()
+                self.saveCurrentConversation()
             }
+        }
+    }
+    
+    func clearMessages() {
+        messages.removeAll()
+        currentConversation = nil
+        onUpdate?()
+    }
+    
+    func loadConversation(_ conversation: Conversation) {
+        self.messages = conversation.messages
+        self.currentConversation = conversation
+        onUpdate?()
+    }
+    
+    func saveCurrentConversation() {
+        guard !messages.isEmpty else { return }
+        
+        if var existing = currentConversation {
+            existing.messages = messages
+            currentConversation = existing
+            storage.update(existing)
+        } else {
+            let newConversation = Conversation(
+                id: UUID(),
+                date: Date(),
+                messages: messages,
+                title: messages.first?.text ?? "Chat on \(DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short))"
+            )
+            currentConversation = newConversation
+            storage.save(newConversation)
         }
     }
     
@@ -40,24 +74,6 @@ class ChatViewModel {
 
     var messageCount: Int {
         return messages.count
-    }
-    
-    func clearMessages() {
-        messages.removeAll()
-        onUpdate?()
-    }
-    
-    func saveCurrentConversation() {
-        guard !messages.isEmpty else { return }
-        
-        let conversation = Conversation(
-            id: UUID(),
-            date: Date(),
-            messages: messages,
-            title: messages.first?.text ?? "Chat on \(DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short))"
-        )
-        
-        storage.save(conversation)
     }
     
     func loadSavedConversations() -> [Conversation] {
