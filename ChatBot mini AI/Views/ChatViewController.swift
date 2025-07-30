@@ -10,7 +10,7 @@ import UIKit
 
 class ChatViewController: UIViewController {
     
-    private let viewModel = ChatViewModel()
+    private let viewModel = ChatViewModel(storage: ConversationStorage())
     
     private let headerView = UIView()
     private let menuButton = UIButton(type: .system)

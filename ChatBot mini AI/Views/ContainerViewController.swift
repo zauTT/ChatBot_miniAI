@@ -32,6 +32,7 @@ class ContainerViewController: UIViewController {
         dimmingView.backgroundColor = UIColor.black.withAlphaComponent(0.3)
         dimmingView.frame = view.bounds
         dimmingView.alpha = 0
+        
         view.insertSubview(dimmingView, aboveSubview: menuVC.view)
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapOutsideMenu))

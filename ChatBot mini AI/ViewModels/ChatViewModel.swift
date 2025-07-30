@@ -8,10 +8,15 @@
 import Foundation
 
 class ChatViewModel {
+    private let storage: ConversationStorage
     private let chatService = ChatService()
     private(set) var messages: [ChatMessage] = []
 
     var onUpdate: (() -> Void)?
+    
+    init(storage: ConversationStorage) {
+        self.storage = storage
+    }
 
     func send(_ text: String) {
         let userMessage = ChatMessage(text: text, sender: .user)
@@ -40,5 +45,26 @@ class ChatViewModel {
     func clearMessages() {
         messages.removeAll()
         onUpdate?()
+    }
+    
+    func saveCurrentConversation() {
+        guard !messages.isEmpty else { return }
+        
+        let conversation = Conversation(
+            id: UUID(),
+            date: Date(),
+            messages: messages,
+            title: messages.first?.text ?? "Chat on \(DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short))"
+        )
+        
+        storage.save(conversation)
+    }
+    
+    func loadSavedConversations() -> [Conversation] {
+        if let data = UserDefaults.standard.data(forKey: "savedConversations"),
+           let conversations = try? JSONDecoder().decode([Conversation].self, from: data) {
+            return conversations
+        }
+        return []
     }
 }
