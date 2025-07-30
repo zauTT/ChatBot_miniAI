@@ -39,6 +39,7 @@ class MenuViewController: UIViewController {
         }
 
         @objc private func newChatTapped() {
+            print("New Chat button tapped")
             onNewChatTap?()
         }
     }

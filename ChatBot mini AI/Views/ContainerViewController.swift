@@ -29,18 +29,19 @@ class ContainerViewController: UIViewController {
         chatVC.view.frame = view.bounds
         chatVC.didMove(toParent: self)
         
-        addChild(menuVC)
-        view.addSubview(menuVC.view)
-        menuVC.view.frame = CGRect(x: -menuWidth, y: 0, width: menuWidth, height: view.bounds.height)
-        menuVC.didMove(toParent: self)
-        
         dimmingView.backgroundColor = UIColor.black.withAlphaComponent(0.3)
         dimmingView.frame = view.bounds
         dimmingView.alpha = 0
         view.insertSubview(dimmingView, aboveSubview: menuVC.view)
         
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(toggleMenu))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapOutsideMenu))
+        tapGesture.cancelsTouchesInView = false
         dimmingView.addGestureRecognizer(tapGesture)
+        
+        addChild(menuVC)
+        view.addSubview(menuVC.view)
+        menuVC.view.frame = CGRect(x: -menuWidth, y: 0, width: menuWidth, height: view.bounds.height)
+        menuVC.didMove(toParent: self)
         
         chatVC.onMenuTap = { [weak self] in
             self?.toggleMenu()
@@ -61,7 +62,14 @@ class ContainerViewController: UIViewController {
         })
         
         self.chatVC.updateBackgroundColor(for: isMenuOpen, style: self.traitCollection.userInterfaceStyle)
+    }
+    
+    @objc private func handleTapOutsideMenu(_ gesture: UITapGestureRecognizer) {
+        let location = gesture.location(in: view)
         
+        if !menuVC.view.frame.contains(location) {
+            toggleMenu()
+        }
     }
     
     private func startNewChat() {
