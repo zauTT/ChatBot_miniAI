@@ -204,6 +204,7 @@ class ChatViewController: UIViewController {
     
     @objc private func menuButtonTapped() {
         print("Menu button tapped")
+        HapticManager.shared.impact(style: .light)
         onMenuTap?()
     }
     

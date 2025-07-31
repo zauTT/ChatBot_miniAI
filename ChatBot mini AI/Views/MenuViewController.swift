@@ -78,6 +78,9 @@ class MenuViewController: UIViewController {
     
     private func deleteConversation(_ conversation: Conversation) {
         let update = storage.fetchAll().filter { $0.id != conversation.id }
+        
+        HapticManager.shared.selection()
+        
         storage.saveAll(update)
         loadConversations()
         onConversationDeleted?(conversation.id)
@@ -107,6 +110,8 @@ class MenuViewController: UIViewController {
         
         guard let indexPath = tableView.indexPathForRow(at: point),
               gesture.state == .began else { return }
+        
+        HapticManager.shared.impact(style: .medium)
         
         let selectedConversation = conversations[indexPath.row]
         
