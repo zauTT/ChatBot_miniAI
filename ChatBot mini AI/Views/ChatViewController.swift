@@ -24,6 +24,10 @@ class ChatViewController: UIViewController {
     
     private var inputContainerBottomConstraint: NSLayoutConstraint = NSLayoutConstraint()
     
+    var currentConversationID: UUID? {
+        return viewModel.currentConversation?.id
+    }
+    
     var onMenuTap: (() -> Void)?
     
     override func viewDidLoad() {

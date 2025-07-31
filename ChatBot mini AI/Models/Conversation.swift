@@ -11,5 +11,5 @@ struct Conversation: Codable {
     let id: UUID
     let date: Date
     var messages: [ChatMessage]
-    let title: String
+    var title: String
 }

@@ -12,7 +12,7 @@ class ChatViewModel {
     private let chatService = ChatService()
     private(set) var messages: [ChatMessage] = []
     
-    private var currentConversation: Conversation?
+    private(set) var currentConversation: Conversation?
 
     var onUpdate: (() -> Void)?
     

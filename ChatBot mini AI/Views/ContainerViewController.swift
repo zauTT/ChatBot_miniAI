@@ -57,6 +57,12 @@ class ContainerViewController: UIViewController {
             self?.toggleMenu()
             self?.menuVC.loadConversations()
         }
+        
+        menuVC.onConversationDeleted = { [weak self] deletedID in
+            if let current = self?.chatVC.currentConversationID, current == deletedID {
+                self?.chatVC.startNewConversation()
+            }
+        }
     }
     
     @objc private func toggleMenu() {
