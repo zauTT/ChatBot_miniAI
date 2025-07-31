@@ -92,13 +92,9 @@ extension MenuViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath.section == 0 {
-            onNewChatTap?()
-        } else {
-            let selectedConversation = conversations[indexPath.row]
-            print("Tapped saved conversation: \(selectedConversation.title)")
-            onConversationSelected?(selectedConversation)
-        }
+        let selectedConversation = conversations[indexPath.row]
+        print("Tapped saved conversation: \(selectedConversation.title)")
+        onConversationSelected?(selectedConversation)
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }

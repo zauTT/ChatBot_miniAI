@@ -71,16 +71,12 @@ class ChatViewModel {
     func message(at index: Int) -> ChatMessage {
         return messages[index]
     }
-
+    
     var messageCount: Int {
         return messages.count
     }
     
     func loadSavedConversations() -> [Conversation] {
-        if let data = UserDefaults.standard.data(forKey: "savedConversations"),
-           let conversations = try? JSONDecoder().decode([Conversation].self, from: data) {
-            return conversations
-        }
-        return []
+        return storage.fetchAll()
     }
 }
