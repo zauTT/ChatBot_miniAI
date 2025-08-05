@@ -5,7 +5,7 @@
 //  Created by Giorgi Zautashvili on 27.07.25.
 //
 
-import Foundation
+
 import UIKit
 
 class ChatViewController: UIViewController {
@@ -39,6 +39,8 @@ class ChatViewController: UIViewController {
             self?.tableView.reloadData()
             self?.scrollToBottom()
         }
+        
+        tableView.register(TypingIndicatorCell.self, forCellReuseIdentifier: TypingIndicatorCell.identifier)
         
         setupMainContainer()
         setupHeader()
@@ -130,7 +132,7 @@ class ChatViewController: UIViewController {
         
         inputTextField.placeholder = "Ask away..."
         inputTextField.borderStyle = .roundedRect
-        inputTextField.layer.cornerRadius = 8
+        inputTextField.layer.cornerRadius = 13
         inputTextField.layer.masksToBounds = true
         inputTextField.translatesAutoresizingMaskIntoConstraints = false
         
@@ -218,6 +220,7 @@ class ChatViewController: UIViewController {
     @objc private func sendButtonTapped() {
         guard let text = inputTextField.text, !text.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         inputTextField.text = ""
+        
         viewModel.send(text)
     }
     
@@ -268,10 +271,14 @@ extension ChatViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: ChatMessageCell.identifier, for: indexPath) as? ChatMessageCell else {
-            return UITableViewCell()
-        }
         let message = viewModel.message(at: indexPath.row)
+
+        if message.sender == .ai && message.text.isEmpty {
+            let cell = tableView.dequeueReusableCell(withIdentifier: TypingIndicatorCell.identifier, for: indexPath) as! TypingIndicatorCell
+            return cell
+        }
+
+        let cell = tableView.dequeueReusableCell(withIdentifier: ChatMessageCell.identifier, for: indexPath) as! ChatMessageCell
         cell.configure(with: message)
         return cell
     }

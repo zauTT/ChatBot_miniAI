@@ -40,6 +40,8 @@ class MenuViewController: UIViewController {
         loadConversations()
     }
     
+    //MARK: - UI Handling
+    
     private func setupUI() {
         view.addSubview(newChatButton)
         view.addSubview(tableView)
@@ -65,6 +67,8 @@ class MenuViewController: UIViewController {
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
         tableView.addGestureRecognizer(longPress)
     }
+    
+    //MARK: - Actions
     
     func loadConversations() {
         conversations = storage.fetchAll()

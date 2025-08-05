@@ -11,6 +11,7 @@ struct ChatMessage: Identifiable, Codable {
     enum Sender: String, Codable {
         case user
         case ai
+        case typingIndicator
     }
 
     let id: UUID

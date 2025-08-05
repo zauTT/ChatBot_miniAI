@@ -22,20 +22,28 @@ class ChatViewModel {
     
     func send(_ text: String) {
         let userMessage = ChatMessage(text: text, sender: .user)
-        messages.append(userMessage)
-        onUpdate?()
-        
+
+        DispatchQueue.main.async {
+            self.messages.append(userMessage)
+            self.onUpdate?()
+            self.addTypingIndicator()
+        }
+
         chatService.sendMessage(text) { [weak self] reply in
             guard let self = self, let reply = reply else { return }
-            
-            let aiMessage = ChatMessage(text: reply, sender: .ai)
+
             DispatchQueue.main.async {
+                self.removeTypingIndicator()
+
+                let aiMessage = ChatMessage(text: reply, sender: .ai)
                 self.messages.append(aiMessage)
                 self.onUpdate?()
                 self.saveCurrentConversation()
             }
         }
     }
+
+
     
     func clearMessages() {
         messages.removeAll()
@@ -78,5 +86,18 @@ class ChatViewModel {
     
     func loadSavedConversations() -> [Conversation] {
         return storage.fetchAll()
+    }
+    
+    //MARK: - Typing Indicator
+    
+    func addTypingIndicator() {
+        let typing = ChatMessage(text: "", sender: .ai)
+        messages.append(typing)
+        onUpdate?()
+    }
+
+    func removeTypingIndicator() {
+        messages.removeAll { $0.sender == .ai && $0.text.isEmpty }
+        onUpdate?()
     }
 }
