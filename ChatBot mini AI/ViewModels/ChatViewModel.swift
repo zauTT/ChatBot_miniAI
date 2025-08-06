@@ -80,6 +80,11 @@ class ChatViewModel {
         return messages[index]
     }
     
+    func updateMessage(at index: Int, with message: ChatMessage) {
+        guard messages.indices.contains(index) else { return }
+        messages[index] = message
+    }
+    
     var messageCount: Int {
         return messages.count
     }
@@ -99,5 +104,18 @@ class ChatViewModel {
     func removeTypingIndicator() {
         messages.removeAll { $0.sender == .ai && $0.text.isEmpty }
         onUpdate?()
+    }
+    
+    //MARK: - Emoji Reaction
+    
+    func addReaction(_ emoji: String, to messageID: UUID) {
+        if let index = messages.firstIndex(where: { $0.id == messageID }) {
+            if !messages[index].reactions.keys.contains(emoji) {
+                messages[index].reactions[emoji] = 1
+            } else {
+                messages[index].reactions[emoji, default: 0] += 1
+            }
+            onUpdate?()
+        }
     }
 }

@@ -17,10 +17,16 @@ class ChatMessageCell: UITableViewCell {
     private var leadingConstraint: NSLayoutConstraint? = nil
     private var trailingConstraint: NSLayoutConstraint? = nil
     
+    private let reactionsLabel = UILabel()
+    var onEmojiReaction:((String) -> Void)?
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
         backgroundColor = .clear
+        
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress))
+        contentView.addGestureRecognizer(longPress)
         
         setupViews()
         setupConstraints()
@@ -33,36 +39,64 @@ class ChatMessageCell: UITableViewCell {
     private func setupViews() {
         bubbleView.layer.cornerRadius = 16
         bubbleView.layer.masksToBounds = true
-        
+
         messageLabel.numberOfLines = 0
         messageLabel.font = UIFont.systemFont(ofSize: 16)
-        
+
+        reactionsLabel.font = UIFont.systemFont(ofSize: 14)
+        reactionsLabel.textColor = .secondaryLabel
+        reactionsLabel.numberOfLines = 1
+
         contentView.addSubview(bubbleView)
-        contentView.addSubview(messageLabel)
+        bubbleView.addSubview(messageLabel)
+        bubbleView.addSubview(reactionsLabel)
     }
+
     
     private func setupConstraints() {
         bubbleView.translatesAutoresizingMaskIntoConstraints = false
         messageLabel.translatesAutoresizingMaskIntoConstraints = false
-        
+        reactionsLabel.translatesAutoresizingMaskIntoConstraints = false
+
         NSLayoutConstraint.activate([
             messageLabel.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 8),
-            messageLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -8),
-            messageLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -12),
             messageLabel.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 12),
-            
+            messageLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -12),
+
+            reactionsLabel.topAnchor.constraint(equalTo: messageLabel.bottomAnchor, constant: 4),
+            reactionsLabel.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 8),
+            reactionsLabel.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -8),
+            reactionsLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -8),
+
             bubbleView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             bubbleView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
             bubbleView.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, multiplier: 0.75)
         ])
+
         
         leadingConstraint = bubbleView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16)
         trailingConstraint = bubbleView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
     }
     
+    @objc private func handleLongPress() {
+        guard let parentVC = self.parentViewController else { return }
+        
+        let picker = EmojiPickerView(frame: CGRect(x: 0, y: 0, width: 280, height: 60))
+        picker.onEmojiSelected = { [weak self] emoji in
+            self?.onEmojiReaction?(emoji)
+        }
+        
+        picker.center = parentVC.view.center
+        parentVC.view.addSubview(picker)
+    }
+    
     func configure(with message: ChatMessage) {
         messageLabel.text = message.text
         
+        let formattedReactions = message.reactions.map { "\($0.key) x\($0.value)" }
+        reactionsLabel.text = formattedReactions.joined(separator: " ")
+        reactionsLabel.isHidden = message.reactions.isEmpty
+
         leadingConstraint?.isActive = false
         trailingConstraint?.isActive = false
         
@@ -77,5 +111,18 @@ class ChatMessageCell: UITableViewCell {
             leadingConstraint?.isActive = true
             trailingConstraint?.isActive = false
         }
+    }
+}
+
+extension UIView {
+    var parentViewController: UIViewController? {
+        var parentResponder: UIResponder? = self
+        while let responder = parentResponder {
+            if let vc = responder as? UIViewController {
+                return vc
+            }
+            parentResponder = responder.next
+        }
+        return nil
     }
 }

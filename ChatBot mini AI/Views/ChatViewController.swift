@@ -11,6 +11,7 @@ import UIKit
 class ChatViewController: UIViewController {
     
     private let viewModel = ChatViewModel(storage: ConversationStorage())
+    private var emojiBackgroundView: UIView?
     
     private let headerView = UIView()
     private let menuButton = UIButton(type: .system)
@@ -21,6 +22,7 @@ class ChatViewController: UIViewController {
     private let inputContainerView = UIView()
     private let inputTextField = UITextField()
     private let sendButton = UIButton(type: .system)
+    
     
     private var inputContainerBottomConstraint: NSLayoutConstraint = NSLayoutConstraint()
     
@@ -48,6 +50,7 @@ class ChatViewController: UIViewController {
         setupInputBar()
         setupConstraints()
         setupKeyboardObservers()
+        dismissEmojiPicker()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -170,7 +173,7 @@ class ChatViewController: UIViewController {
         ])
     }
     
-    // MARK: - Keyboard Handling
+    // MARK: - Keyboard/Emoji Handling
     
     private func setupKeyboardObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -201,6 +204,56 @@ class ChatViewController: UIViewController {
             self.view.layoutIfNeeded()
         }
     }
+    
+    func showEmojiPicker(below cell: UITableViewCell) {
+        dismissEmojiPicker()
+
+        guard let window = view.window else { return }
+        
+        let backgroundView = UIView(frame: window.bounds)
+//        backgroundView.backgroundColor = UIColor.clear
+        backgroundView.backgroundColor = UIColor.black.withAlphaComponent(0.1)
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissEmojiPicker))
+        tapGesture.delegate = self
+        tapGesture.cancelsTouchesInView = false
+        backgroundView.addGestureRecognizer(tapGesture)
+        
+        let pickerView = EmojiPickerView(frame: CGRect.zero)
+        pickerView.onEmojiSelected = { [weak self] emoji in
+            print("Selected: \(emoji)")
+            self?.dismissEmojiPicker()
+        }
+        
+        backgroundView.addSubview(pickerView)
+            
+        window.addSubview(backgroundView)
+        
+        let cellFrame = cell.convert(cell.bounds, to: window)
+        let pickerHeight: CGFloat = 60
+        let pickerWidth = window.bounds.width - 32
+        let spaceBelow = window.bounds.height - cellFrame.maxY
+        let showAbove = spaceBelow < pickerHeight + 20
+
+        let pickerY: CGFloat = showAbove ? cellFrame.minY - pickerHeight - 8 : cellFrame.maxY + 8
+
+        pickerView.frame = CGRect(
+            x: 16,
+            y: pickerY,
+            width: pickerWidth,
+            height: pickerHeight
+        )
+        
+        self.emojiBackgroundView = backgroundView
+        
+    }
+
+    @objc func dismissEmojiPicker() {
+        print("dismissEmojiPicker called")
+        emojiBackgroundView?.removeFromSuperview()
+        emojiBackgroundView = nil
+    }
+
     
     // MARK: - Actions
     
@@ -263,13 +316,13 @@ class ChatViewController: UIViewController {
     }
 }
 
-// MARK: - UITableViewDataSource
+// MARK: - UITableViewDataSource, UIGestureRecognizerDelegate
 
 extension ChatViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.messageCount
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let message = viewModel.message(at: indexPath.row)
 
@@ -277,9 +330,41 @@ extension ChatViewController: UITableViewDataSource {
             let cell = tableView.dequeueReusableCell(withIdentifier: TypingIndicatorCell.identifier, for: indexPath) as! TypingIndicatorCell
             return cell
         }
-
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: ChatMessageCell.identifier, for: indexPath) as! ChatMessageCell
         cell.configure(with: message)
+        
+        cell.onEmojiReaction = { [weak self] emoji in
+            guard let self = self else { return }
+
+            var message = self.viewModel.message(at: indexPath.row)
+
+            if let count = message.reactions[emoji] {
+                message.reactions[emoji] = count + 1
+            } else {
+                message.reactions[emoji] = 1
+            }
+
+            self.viewModel.updateMessage(at: indexPath.row, with: message)
+            self.tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+
         return cell
+    }
+}
+
+extension ChatViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        if let pickerView = emojiBackgroundView?.subviews.first {
+            let touchPoint = touch.location(in: emojiBackgroundView)
+            let insidePicker = pickerView.frame.contains(touchPoint)
+            print("Tap location: \(touchPoint), picker frame: \(pickerView.frame), insidePicker: \(insidePicker)")
+            if insidePicker {
+                return false
+            }
+        }
+        print("gestureRecognizer(_:shouldReceive:) called")
+        print("Tap outside picker — should recognize gesture")
+        return true
     }
 }
