@@ -78,16 +78,13 @@ class ChatMessageCell: UITableViewCell {
         trailingConstraint = bubbleView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
     }
     
-    @objc private func handleLongPress() {
-        guard let parentVC = self.parentViewController else { return }
-        
-        let picker = EmojiPickerView(frame: CGRect(x: 0, y: 0, width: 280, height: 60))
-        picker.onEmojiSelected = { [weak self] emoji in
-            self?.onEmojiReaction?(emoji)
+    @objc private func handleLongPress(_ gr: UILongPressGestureRecognizer) {
+        guard gr.state == .began, let parentVC = self.parentViewController else { return }
+        let overlay = EmojiPickerOverlay(frame: parentVC.view.bounds)
+        overlay.onEmojiSelected = { [weak self, weak overlay] emoji in self?.onEmojiReaction?(emoji)
+            overlay?.removeFromSuperview()
         }
-        
-        picker.center = parentVC.view.center
-        parentVC.view.addSubview(picker)
+        parentVC.view.addSubview(overlay)
     }
     
     func configure(with message: ChatMessage) {
