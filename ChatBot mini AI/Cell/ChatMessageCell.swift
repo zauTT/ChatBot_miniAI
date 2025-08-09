@@ -84,6 +84,7 @@ class ChatMessageCell: UITableViewCell {
         overlay.onEmojiSelected = { [weak self, weak overlay] emoji in self?.onEmojiReaction?(emoji)
             overlay?.removeFromSuperview()
         }
+        HapticManager.shared.impact(style: .medium)
         parentVC.view.addSubview(overlay)
     }
     

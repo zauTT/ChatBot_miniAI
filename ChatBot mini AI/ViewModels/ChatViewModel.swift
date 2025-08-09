@@ -42,8 +42,6 @@ class ChatViewModel {
             }
         }
     }
-
-
     
     func clearMessages() {
         messages.removeAll()
@@ -83,6 +81,7 @@ class ChatViewModel {
     func updateMessage(at index: Int, with message: ChatMessage) {
         guard messages.indices.contains(index) else { return }
         messages[index] = message
+        saveCurrentConversation()
     }
     
     var messageCount: Int {
@@ -116,6 +115,7 @@ class ChatViewModel {
                 messages[index].reactions[emoji, default: 0] += 1
             }
             onUpdate?()
+            saveCurrentConversation()
         }
     }
 }
