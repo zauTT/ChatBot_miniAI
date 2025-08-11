@@ -330,8 +330,8 @@ extension ChatViewController: UITableViewDataSource {
 
             var message = self.viewModel.message(at: indexPath.row)
 
-            if let count = message.reactions[emoji] {
-                message.reactions[emoji] = count + 1
+            if message.reactions[emoji] != nil {
+                message.reactions.removeValue(forKey: emoji)
             } else {
                 message.reactions[emoji] = 1
             }

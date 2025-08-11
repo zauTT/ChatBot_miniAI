@@ -109,10 +109,10 @@ class ChatViewModel {
     
     func addReaction(_ emoji: String, to messageID: UUID) {
         if let index = messages.firstIndex(where: { $0.id == messageID }) {
-            if !messages[index].reactions.keys.contains(emoji) {
-                messages[index].reactions[emoji] = 1
+            if messages[index].reactions.keys.contains(emoji) {
+                messages[index].reactions.removeValue(forKey: emoji)
             } else {
-                messages[index].reactions[emoji, default: 0] += 1
+                messages[index].reactions[emoji] = 1
             }
             onUpdate?()
             saveCurrentConversation()
